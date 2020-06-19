@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Interfaces/OnlineLeaderboardInterface.h"
 #include "Leaderboards.h"
+#include "Runtime/Online/HTTP/Public/Http.h"
 #include "MyPlayerController.generated.h"
 
 /**
@@ -37,6 +38,7 @@ class HCGA_API AMyPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	AMyPlayerController();
 
 	UFUNCTION()
 	void OnLeaderboardReadComplete(bool bWasSuccessful);
@@ -71,4 +73,13 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateWidget();
+
+	/* Http Module*/
+	FHttpModule* Http;
+
+	/* Get User Location */
+	void GetUserLocationCall(uint64& steamid);
+
+	/*Assign this function to call when the GET request processes sucessfully*/
+	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };
