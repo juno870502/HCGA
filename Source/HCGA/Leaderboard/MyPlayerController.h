@@ -12,7 +12,6 @@
 /**
  * 
  */
-
 USTRUCT(BlueprintType)
 struct FLeaderboardRowData
 {
@@ -20,16 +19,16 @@ struct FLeaderboardRowData
 
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 Rank = 0;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString Nickname = "";
+		int32 Rank = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 Time = 0;
+		FString Nickname = "";
 
-	//UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	//FString Country = "";
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		int32 Time = 0;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		FString Country = "";
 };
 
 UCLASS()
@@ -54,10 +53,6 @@ public:
 	/** Updates leaderboard stats, force */
 	UFUNCTION(BlueprintCallable)
 	void WriteLeaderboard();
-
-	/** Updates leaderboard stats, compare */
-	UFUNCTION(BlueprintCallable)
-	void ReadLeaderboardToWrite();
 
 	UFUNCTION()
 	void OnLeaderboardReadCompleteToWrite(bool bWasSuccessful);

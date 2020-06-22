@@ -43,16 +43,17 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 					BPData.Nickname = RowData.NickName;
 					BPData.Time = Time;
 
-					uint64 int64ID = SteamUser()->GetSteamID().ConvertToUint64();
-					
+					//PlayerID to SteamID
+					uint64 int64ID = *(uint64*)RowData.PlayerId->GetBytes();
+
+					// Request to Steam Web API
 					GetUserLocationCall(int64ID);
 
 					BPDataArray.Add(BPData);
 					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("UserID : %lld"), int64ID));
 				}
 			}
-			UpdateWidget();
-			BPDataArray.Empty();
+			//UpdateWidget();
 		}
 	}
 }
@@ -73,35 +74,6 @@ void AMyPlayerController::ClearLeaderboardDelegate()
 void AMyPlayerController::WriteLeaderboard()
 {
 	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
-	if (SubSystem)
-	{
-		IOnlineIdentityPtr Identity = SubSystem->GetIdentityInterface();
-		if (Identity.IsValid())
-		{
-			TSharedPtr<const FUniqueNetId> UserIdPtr = Identity->GetUniquePlayerId(0);
-			if (UserIdPtr.IsValid())
-			{
-				IOnlineLeaderboardsPtr Leaderboards = SubSystem->GetLeaderboardsInterface();
-				if (Leaderboards.IsValid())
-				{
-					int TimeInteger;
-					TimeInteger = UGameplayStatics::GetTimeSeconds(GetWorld()) * 100;
-					//WriteLeaderboardVariable.FindStatByName(TEXT("Time"));
-					WriteLeaderboardVariable.SetIntStat(TEXT("Time"), TimeInteger);
-					
-					Leaderboards->WriteLeaderboards(WriteLeaderboardVariable.LeaderboardNames[0], (*UserIdPtr), WriteLeaderboardVariable);
-					Leaderboards->FlushLeaderboards(WriteLeaderboardVariable.LeaderboardNames[0]);
-
-					//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Black, FString::Printf(TEXT("TimeIntager : %d"), TimeInteger));
-				}
-			}
-		}
-	}
-}
-
-void AMyPlayerController::ReadLeaderboardToWrite()
-{
-	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
 
 	if (SubSystem)
 	{
@@ -116,6 +88,7 @@ void AMyPlayerController::ReadLeaderboardToWrite()
 			if (Leaderboards.IsValid())
 			{
 				// We are about to read the stats. The delegate will set this to false once the read is complete.
+				//LeaderboardReadCompleteDelegateHandle = Leaderboards->OnLeaderboardReadCompleteDelegates.AddUObject(this, &UBFL_Leaderboard::OnLeaderboardReadCompleteToWrite);
 				LeaderboardReadCompleteDelegateHandle = Leaderboards->OnLeaderboardReadCompleteDelegates.AddUObject(this, &AMyPlayerController::OnLeaderboardReadCompleteToWrite);
 
 				ReadObject = MakeShareable(new FHCGALeaderboardRead());
@@ -124,7 +97,7 @@ void AMyPlayerController::ReadLeaderboardToWrite()
 				// Read only one player, self.
 				Leaderboards->ReadLeaderboardsAroundUser(UserIdRef, 0, ReadRef);
 
-				TimeToWrite = UGameplayStatics::GetTimeSeconds(GetWorld()) * 100;
+				TimeToWrite = UGameplayStatics::GetTimeSeconds(GEngine->GetWorld()) * 100;
 			}
 		}
 	}
@@ -132,14 +105,14 @@ void AMyPlayerController::ReadLeaderboardToWrite()
 
 void AMyPlayerController::OnLeaderboardReadCompleteToWrite(bool bWasSuccessful)
 {
-
+	// To Compare Leaderboard Data and Current Record
 	FLeaderboardRowData CompareData;
 
 	if (ReadObject.IsValid() && ReadObject->ReadState == EOnlineAsyncTaskState::Done)
 	{
 		//bHasFetchedPlatformData = true;
 		ClearLeaderboardDelegate();
-		
+
 		// We should only have one stat.
 		if (bWasSuccessful && ReadObject->Rows.Num() == 1)
 		{
@@ -148,13 +121,14 @@ void AMyPlayerController::OnLeaderboardReadCompleteToWrite(bool bWasSuccessful)
 			if (const FVariantData* TimeData = RowData.Columns.Find(LEADERBOARD_STAT_TIME))
 			{
 				TimeData->GetValue(Time);
-				CompareData.Rank = RowData.Rank;
-				CompareData.Nickname = RowData.NickName;
+				// Not required
+				//CompareData.Rank = RowData.Rank;
+				//CompareData.Nickname = RowData.NickName;
 				CompareData.Time = Time;
-				
+
 				//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Black, FString::Printf(TEXT("TimeToWrite : %d"), Time));
 			}
-			
+
 		}
 	}
 	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
@@ -171,7 +145,8 @@ void AMyPlayerController::OnLeaderboardReadCompleteToWrite(bool bWasSuccessful)
 				{
 					if (CompareData.Time > TimeToWrite || CompareData.Time == 0)
 					{
-						WriteLeaderboardVariable.SetIntStat(TEXT("Time"), TimeToWrite);						
+						WriteLeaderboardVariable;
+						WriteLeaderboardVariable.SetIntStat(TEXT("Time"), TimeToWrite);
 
 						Leaderboards->WriteLeaderboards(WriteLeaderboardVariable.LeaderboardNames[0], (*UserIdPtr), WriteLeaderboardVariable);
 						Leaderboards->FlushLeaderboards(WriteLeaderboardVariable.LeaderboardNames[0]);
@@ -187,6 +162,7 @@ void AMyPlayerController::OnLeaderboardReadCompleteToWrite(bool bWasSuccessful)
 void AMyPlayerController::ReadLeaderboard()
 {
 	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
+	BPDataArray.Empty();
 
 	if (SubSystem)
 	{
@@ -220,7 +196,7 @@ void AMyPlayerController::GetUserLocationCall(uint64 &steamid)
 	Request->OnProcessRequestComplete().BindUObject(this, &AMyPlayerController::OnResponseReceived);
 	//This is the url on which to process the request
 	FString URL = FString::Printf(TEXT("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=FEA5E223FDF8E24E86134FFF026F6F90&steamids=%lld"), steamid);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, URL);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, URL);
 	Request->SetURL(URL);
 	Request->SetVerb("GET");
 	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
@@ -231,7 +207,7 @@ void AMyPlayerController::GetUserLocationCall(uint64 &steamid)
 void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	//FString ResponseText = Response->GetContentAsString();
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Start OnResponseReceived")));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Start OnResponseReceived")));
 
 	//Create a pointer to hold the json serialized data
 	TSharedPtr<FJsonObject> JsonObject;
@@ -242,7 +218,7 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 	////Deserialize the json data given Reader and the actual object to deserialize
 	if (FJsonSerializer::Deserialize(Reader, JsonObject))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Success Deserialize")));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Success Deserialize")));
 		//Get the value of the json object by field name
 		//JsonObject->GetStringField()
 		TSharedPtr<FJsonObject> responseJson = JsonObject->GetObjectField("response");
@@ -252,8 +228,10 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 			TSharedPtr<FJsonObject> obj = arr[i]->AsObject();
 			FString CountryCode = obj->GetStringField("loccountrycode");
 			//Output it to the engine
+			BPDataArray[i].Country = CountryCode;
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, CountryCode);
 		}
-		
+
 	}
+	UpdateWidget();
 }
