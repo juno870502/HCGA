@@ -29,6 +29,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		FString Country = "";
+
+	
+		UINT64 SteamID = 0;
 };
 
 UCLASS()
@@ -73,7 +76,7 @@ public:
 	FHttpModule* Http;
 
 	/* Get User Location */
-	void GetUserLocationCall(uint64& steamid);
+	void GetUserLocationCall(TArray<uint64> &steamid);
 
 	/*Assign this function to call when the GET request processes sucessfully*/
 	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);

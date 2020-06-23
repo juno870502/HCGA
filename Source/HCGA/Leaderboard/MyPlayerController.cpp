@@ -16,6 +16,8 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
+#include <sstream>
+
 AMyPlayerController::AMyPlayerController()
 {
 	Http = &FHttpModule::Get();
@@ -31,13 +33,14 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 		// We should only have one stat.
 		if (bWasSuccessful)
 		{
+			TArray<UINT64> IDs;
 			for (size_t i = 0; i < ReadObject->Rows.Num(); i++)
 			{
 				FOnlineStatsRow& RowData = ReadObject->Rows[i];
-				int32 Time;
 				if (const FVariantData* TimeData = RowData.Columns.Find(LEADERBOARD_STAT_TIME))
 				{
 					FLeaderboardRowData BPData;
+					int32 Time;
 					TimeData->GetValue(Time);
 					BPData.Rank = RowData.Rank;
 					BPData.Nickname = RowData.NickName;
@@ -46,14 +49,18 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 					//PlayerID to SteamID
 					uint64 int64ID = *(uint64*)RowData.PlayerId->GetBytes();
 
-					// Request to Steam Web API
-					GetUserLocationCall(int64ID);
+					BPData.SteamID = int64ID;
+
+					IDs.Add(int64ID);
 
 					BPDataArray.Add(BPData);
-					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("UserID : %lld"), int64ID));
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Time : %d"), Time));
+					TimeData->~FVariantData();
 				}
 			}
-			//UpdateWidget();
+
+			// Request to Steam Web API
+			GetUserLocationCall(IDs);
 		}
 	}
 }
@@ -97,7 +104,7 @@ void AMyPlayerController::WriteLeaderboard()
 				// Read only one player, self.
 				Leaderboards->ReadLeaderboardsAroundUser(UserIdRef, 0, ReadRef);
 
-				TimeToWrite = UGameplayStatics::GetTimeSeconds(GEngine->GetWorld()) * 100;
+				TimeToWrite = UGameplayStatics::GetTimeSeconds(GetWorld()) * 100;
 			}
 		}
 	}
@@ -190,13 +197,23 @@ void AMyPlayerController::ReadLeaderboard()
 	}
 }
 
-void AMyPlayerController::GetUserLocationCall(uint64 &steamid)
+void AMyPlayerController::GetUserLocationCall(TArray<uint64> &steamid)
 {
+	// Make string for find player's profile
+	FString IDs;
+	for (size_t i = 0; i < steamid.Num(); i++)
+	{
+		std::ostringstream oss;
+		oss << steamid[i];
+		FString TempID = oss.str().c_str();
+		IDs.Append(TempID +",");
+	}
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &AMyPlayerController::OnResponseReceived);
 	//This is the url on which to process the request
-	FString URL = FString::Printf(TEXT("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=FEA5E223FDF8E24E86134FFF026F6F90&steamids=%lld"), steamid);
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, URL);
+	FString URL = FString::Printf(TEXT("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=FEA5E223FDF8E24E86134FFF026F6F90&steamids="));
+	URL.Append(IDs);
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, URL);
 	Request->SetURL(URL);
 	Request->SetVerb("GET");
 	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
@@ -227,9 +244,20 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 		{
 			TSharedPtr<FJsonObject> obj = arr[i]->AsObject();
 			FString CountryCode = obj->GetStringField("loccountrycode");
+			INT64 SteamID;
+			obj->TryGetNumberField("steamid", SteamID);
+			UINT64 USteamID = SteamID;
+			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("Json ID : %lld"), USteamID));
 			//Output it to the engine
-			BPDataArray[i].Country = CountryCode;
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, CountryCode);
+			for (size_t j = 0; j < BPDataArray.Num(); j++)
+			{
+				if (BPDataArray[j].SteamID == USteamID)
+				{
+					BPDataArray[j].Country = CountryCode;
+					break;
+				}
+			}
+			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, CountryCode);
 		}
 
 	}
