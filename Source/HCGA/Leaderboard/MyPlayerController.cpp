@@ -37,7 +37,8 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 			for (size_t i = 0; i < ReadObject->Rows.Num(); i++)
 			{
 				FOnlineStatsRow& RowData = ReadObject->Rows[i];
-				if (const FVariantData* TimeData = RowData.Columns.Find(LEADERBOARD_STAT_TIME))
+				if (const FVariantData* TimeData = RowData.Columns.Find("Time"))
+					// Find(LEADERBOARD_STAT_TIME)
 				{
 					FLeaderboardRowData BPData;
 					int32 Time;
@@ -55,7 +56,6 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 
 					BPDataArray.Add(BPData);
 					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Time : %d"), Time));
-					TimeData->~FVariantData();
 				}
 			}
 
@@ -89,6 +89,8 @@ void AMyPlayerController::WriteLeaderboard()
 		{
 			TSharedPtr<const FUniqueNetId> UserIdPtr = Identity->GetUniquePlayerId(0);
 			TSharedRef<const FUniqueNetId> UserIdRef = UserIdPtr.ToSharedRef();
+			TArray<TSharedRef<const FUniqueNetId>> ArrayIdRef;
+			ArrayIdRef.Add(UserIdRef);
 
 			IOnlineLeaderboardsPtr Leaderboards = SubSystem->GetLeaderboardsInterface();
 
@@ -102,7 +104,7 @@ void AMyPlayerController::WriteLeaderboard()
 				FOnlineLeaderboardReadRef ReadRef = ReadObject.ToSharedRef();
 
 				// Read only one player, self.
-				Leaderboards->ReadLeaderboardsAroundUser(UserIdRef, 0, ReadRef);
+				Leaderboards->ReadLeaderboards(ArrayIdRef, ReadRef);
 
 				TimeToWrite = UGameplayStatics::GetTimeSeconds(GetWorld()) * 100;
 			}
@@ -190,7 +192,7 @@ void AMyPlayerController::ReadLeaderboard()
 				FOnlineLeaderboardReadRef ReadRef = ReadObject.ToSharedRef();
 
 				Leaderboards->FreeStats(ReadRef.Get());
-
+				//Leaderboards->ReadLeaderboardsAroundUser(UserIdRef, 20, ReadRef);
 				Leaderboards->ReadLeaderboardsAroundRank(10, 10, ReadRef);
 			}
 		}
