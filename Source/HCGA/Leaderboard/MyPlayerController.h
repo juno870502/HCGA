@@ -7,6 +7,7 @@
 #include "Interfaces/OnlineLeaderboardInterface.h"
 #include "Leaderboards.h"
 #include "Runtime/Online/HTTP/Public/Http.h"
+#include "steam/isteamuserstats.h"
 #include "MyPlayerController.generated.h"
 
 /**
@@ -30,6 +31,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		FString Country = "";
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		FString ImgURL = "";
 	
 		UINT64 SteamID = 0;
 };
@@ -47,6 +50,7 @@ public:
 
 	/** Internal. Reads the stats from the platform backend to sync online status with local */
 	FOnlineLeaderboardReadPtr ReadObject;
+
 	FDelegateHandle LeaderboardReadCompleteDelegateHandle;
 	void ClearLeaderboardDelegate();
 
@@ -76,8 +80,25 @@ public:
 	FHttpModule* Http;
 
 	/* Get User Location */
-	void GetUserLocationCall(TArray<uint64> &steamid);
+	void GetUserLocationCall();
 
 	/*Assign this function to call when the GET request processes sucessfully*/
 	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+
+	/* Using in steam*/
+	SteamLeaderboard_t m_CurrentLeaderboard;
+	int m_nLeaderboardEntries = 100; // How many entries do we have?
+	LeaderboardEntry_t m_leaderboardEntries[100]; // The entries
+
+	UFUNCTION(BlueprintCallable)
+	void FindLeaderboard(const FString pchLeaderboardName);
+	bool UploadScore(int score);
+	bool DownloadScores();
+	void OnFindLeaderboard(LeaderboardFindResult_t *pResult, bool bIOFailure);
+	CCallResult<AMyPlayerController, LeaderboardFindResult_t> m_callResultFindLeaderboard;
+	void OnUploadScore(LeaderboardScoreUploaded_t *pResult, bool bIOFailure);
+	CCallResult < AMyPlayerController, LeaderboardScoreUploaded_t> m_callResultUploadScore;
+	void OnDownloadScore(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+	CCallResult < AMyPlayerController, LeaderboardScoresDownloaded_t> m_callResultDownloadScore;
 };

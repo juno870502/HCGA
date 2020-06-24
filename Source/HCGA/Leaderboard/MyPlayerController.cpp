@@ -11,16 +11,22 @@
 #include "Misc/DateTime.h"
 #include "OnlineSubsystemTypes.h"
 #include "Kismet/KismetInternationalizationLibrary.h"
-#include "Steamworks/Steamv146/sdk/public/steam/steam_api.h"
 
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
 #include <sstream>
 
+#include "steam/steam_api.h"
+
 AMyPlayerController::AMyPlayerController()
 {
 	Http = &FHttpModule::Get();
+	// Initialize Steam
+	bool bRet = SteamAPI_Init();
+	// Create the SteamLeaderboards object if Steam was successfully initialized
+
+	SteamAPI_RunCallbacks();
 }
 
 void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
@@ -30,37 +36,48 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 		//bHasFetchedPlatformData = true;
 		ClearLeaderboardDelegate();
 
-		// We should only have one stat.
 		if (bWasSuccessful)
 		{
 			TArray<UINT64> IDs;
 			for (size_t i = 0; i < ReadObject->Rows.Num(); i++)
 			{
-				FOnlineStatsRow& RowData = ReadObject->Rows[i];
-				if (const FVariantData* TimeData = RowData.Columns.Find("Time"))
-					// Find(LEADERBOARD_STAT_TIME)
+				//TSharedPtr<FOnlineStatsRow> RowData = MakeShareable(new FOnlineStatsRow(ReadObject->Rows[i]));
+				const FOnlineStatsRow* RowData = &ReadObject->Rows[i];
+				// Find(LEADERBOARD_STAT_TIME)
+				
+				FLeaderboardRowData BPData;
+				int32 Time;
+				RowData->Columns.Find("Time")->GetValue(Time);
+
+				////////////////////
+				// Testing....
+				for (auto Elem : ReadObject->Rows[i].Columns)
 				{
-					FLeaderboardRowData BPData;
-					int32 Time;
-					TimeData->GetValue(Time);
-					BPData.Rank = RowData.Rank;
-					BPData.Nickname = RowData.NickName;
-					BPData.Time = Time;
-
-					//PlayerID to SteamID
-					uint64 int64ID = *(uint64*)RowData.PlayerId->GetBytes();
-
-					BPData.SteamID = int64ID;
-
-					IDs.Add(int64ID);
-
-					BPDataArray.Add(BPData);
-					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Time : %d"), Time));
+					FString TempString = Elem.Key.ToString();
+					//Elem.Value.ToString()
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TempString);
 				}
+				////////////////////
+
+				BPData.Rank = RowData->Rank;
+				BPData.Nickname = RowData->NickName;
+				BPData.Time = Time;
+
+				//PlayerID to SteamID
+				uint64 int64ID = *(uint64*)RowData->PlayerId->GetBytes();
+
+				BPData.SteamID = int64ID;
+
+				IDs.Add(int64ID);
+
+				BPDataArray.Add(BPData);
+
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Silver, FString::Printf(TEXT("Time : %d"), Time));
+				
 			}
 
 			// Request to Steam Web API
-			GetUserLocationCall(IDs);
+			//GetUserLocationCall(IDs);
 		}
 	}
 }
@@ -74,6 +91,7 @@ void AMyPlayerController::ClearLeaderboardDelegate()
 		if (Leaderboards.IsValid())
 		{
 			Leaderboards->ClearOnLeaderboardReadCompleteDelegate_Handle(LeaderboardReadCompleteDelegateHandle);
+
 		}
 	}
 }
@@ -191,7 +209,7 @@ void AMyPlayerController::ReadLeaderboard()
 				ReadObject = MakeShareable(new FHCGALeaderboardRead());
 				FOnlineLeaderboardReadRef ReadRef = ReadObject.ToSharedRef();
 
-				Leaderboards->FreeStats(ReadRef.Get());
+				//Leaderboards->FreeStats(ReadRef.Get());
 				//Leaderboards->ReadLeaderboardsAroundUser(UserIdRef, 20, ReadRef);
 				Leaderboards->ReadLeaderboardsAroundRank(10, 10, ReadRef);
 			}
@@ -199,14 +217,14 @@ void AMyPlayerController::ReadLeaderboard()
 	}
 }
 
-void AMyPlayerController::GetUserLocationCall(TArray<uint64> &steamid)
+void AMyPlayerController::GetUserLocationCall()
 {
 	// Make string for find player's profile
 	FString IDs;
-	for (size_t i = 0; i < steamid.Num(); i++)
+	for (size_t i = 0; i < BPDataArray.Num(); i++)
 	{
 		std::ostringstream oss;
-		oss << steamid[i];
+		oss << BPDataArray[i].SteamID;
 		FString TempID = oss.str().c_str();
 		IDs.Append(TempID +",");
 	}
@@ -246,6 +264,9 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 		{
 			TSharedPtr<FJsonObject> obj = arr[i]->AsObject();
 			FString CountryCode = obj->GetStringField("loccountrycode");
+			FString ImgURL = obj->GetStringField("avatar");
+
+			// Steam ID Validate
 			INT64 SteamID;
 			obj->TryGetNumberField("steamid", SteamID);
 			UINT64 USteamID = SteamID;
@@ -256,6 +277,7 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 				if (BPDataArray[j].SteamID == USteamID)
 				{
 					BPDataArray[j].Country = CountryCode;
+					BPDataArray[j].ImgURL = ImgURL;
 					break;
 				}
 			}
@@ -264,4 +286,83 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 
 	}
 	UpdateWidget();
+}
+
+void AMyPlayerController::FindLeaderboard(const FString pchLeaderboardName)
+{
+	m_CurrentLeaderboard = NULL;
+
+	SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard("Time");
+	m_callResultFindLeaderboard.Set(hSteamAPICall, this, &AMyPlayerController::OnFindLeaderboard);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of FindLeaderboard")));
+}
+
+bool AMyPlayerController::UploadScore(int score)
+{
+	if (!m_CurrentLeaderboard)
+		return false;
+
+	SteamAPICall_t hSteamAPICall =
+		SteamUserStats()->UploadLeaderboardScore(m_CurrentLeaderboard, k_ELeaderboardUploadScoreMethodKeepBest, score, NULL, 0);
+
+	m_callResultUploadScore.Set(hSteamAPICall, this, &AMyPlayerController::OnUploadScore);
+
+	return true;
+}
+
+bool AMyPlayerController::DownloadScores()
+{
+	if (!m_CurrentLeaderboard)
+		return false;
+
+	// load the specified leaderboard data around the current user
+	SteamAPICall_t hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(
+		m_CurrentLeaderboard, k_ELeaderboardDataRequestGlobalAroundUser, -49, 50);
+	m_callResultDownloadScore.Set(hSteamAPICall, this, &AMyPlayerController::OnDownloadScore);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of DownloadScores")));
+	return true;
+}
+
+void AMyPlayerController::OnFindLeaderboard(LeaderboardFindResult_t * pResult, bool bIOFailure)
+{
+	// see if we encountered an error during the call
+	if (!pResult->m_bLeaderboardFound || bIOFailure)
+	{
+		//OutputDebugString("Leaderboard could not be found\n");
+		return;
+	}
+
+	m_CurrentLeaderboard = pResult->m_hSteamLeaderboard;
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of OnFindLeaderboard")));
+	DownloadScores();
+}
+
+void AMyPlayerController::OnUploadScore(LeaderboardScoreUploaded_t * pResult, bool bIOFailure)
+{
+}
+
+void AMyPlayerController::OnDownloadScore(LeaderboardScoresDownloaded_t * pResult, bool bIOFailure)
+{
+	BPDataArray.Empty();
+	if (!bIOFailure)
+	{
+		//m_nLeaderboardEntries = min(pCallback->m_cEntryCount, 10);
+		if (pResult->m_cEntryCount < m_nLeaderboardEntries)
+		{
+			m_nLeaderboardEntries = pResult->m_cEntryCount;
+		}
+		
+		for (int index = 0; index < m_nLeaderboardEntries; index++)
+		{
+			SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, index, &m_leaderboardEntries[index], NULL, 0);
+			FLeaderboardRowData Data;
+			Data.SteamID = m_leaderboardEntries[index].m_steamIDUser.ConvertToUint64();
+			Data.Nickname = SteamFriends()->GetFriendPersonaName(m_leaderboardEntries[index].m_steamIDUser);
+			Data.Rank = m_leaderboardEntries[index].m_nGlobalRank;
+			Data.Time = m_leaderboardEntries[index].m_nScore;
+			BPDataArray.Add(Data);
+		}
+	}
+	GetUserLocationCall();
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of OnDownloadScore")));
 }
