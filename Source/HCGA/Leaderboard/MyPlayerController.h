@@ -45,6 +45,8 @@ class HCGA_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	UFUNCTION()
 	void OnLeaderboardReadComplete(bool bWasSuccessful);
 

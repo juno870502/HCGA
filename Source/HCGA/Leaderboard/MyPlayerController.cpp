@@ -29,6 +29,14 @@ AMyPlayerController::AMyPlayerController()
 	SteamAPI_RunCallbacks();
 }
 
+void AMyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	// Shutdown Steam
+	SteamAPI_Shutdown();
+}
+
 void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 {
 	if (ReadObject.IsValid() && ReadObject->ReadState == EOnlineAsyncTaskState::Done)
@@ -292,9 +300,13 @@ void AMyPlayerController::FindLeaderboard(const FString pchLeaderboardName)
 {
 	m_CurrentLeaderboard = NULL;
 
-	SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard("Time");
-	m_callResultFindLeaderboard.Set(hSteamAPICall, this, &AMyPlayerController::OnFindLeaderboard);
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of FindLeaderboard")));
+	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
+	if (SubSystem)
+	{
+		SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard("Time");
+		m_callResultFindLeaderboard.Set(hSteamAPICall, this, &AMyPlayerController::OnFindLeaderboard);
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of FindLeaderboard")));
+	}
 }
 
 bool AMyPlayerController::UploadScore(int score)
