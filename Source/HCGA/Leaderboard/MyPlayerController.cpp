@@ -34,7 +34,7 @@ void AMyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	// Shutdown Steam
-	SteamAPI_Shutdown();
+	//SteamAPI_Shutdown();
 }
 
 void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
@@ -63,7 +63,7 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 				{
 					FString TempString = Elem.Key.ToString();
 					//Elem.Value.ToString()
-					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TempString);
+					//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TempString);
 				}
 				////////////////////
 
@@ -80,7 +80,7 @@ void AMyPlayerController::OnLeaderboardReadComplete(bool bWasSuccessful)
 
 				BPDataArray.Add(BPData);
 
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Silver, FString::Printf(TEXT("Time : %d"), Time));
+				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Silver, FString::Printf(TEXT("Time : %d"), Time));
 				
 			}
 
@@ -241,7 +241,7 @@ void AMyPlayerController::GetUserLocationCall()
 	//This is the url on which to process the request
 	FString URL = FString::Printf(TEXT("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=FEA5E223FDF8E24E86134FFF026F6F90&steamids="));
 	URL.Append(IDs);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, URL);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, URL);
 	Request->SetURL(URL);
 	Request->SetVerb("GET");
 	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
