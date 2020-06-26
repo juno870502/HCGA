@@ -303,7 +303,7 @@ void AMyPlayerController::FindLeaderboard(const FString pchLeaderboardName)
 	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
 	if (SubSystem)
 	{
-		SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard("Time");
+		SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard(TCHAR_TO_ANSI(*pchLeaderboardName));
 		m_callResultFindLeaderboard.Set(hSteamAPICall, this, &AMyPlayerController::OnFindLeaderboard);
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of FindLeaderboard")));
 	}
