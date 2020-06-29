@@ -17,18 +17,13 @@ public:
 
 	UProjectGameInstance();
 
+	virtual void Init() override;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int SelectCharacter = 0;
 
-	UFUNCTION(BlueprintCallable)
-	void ReadLeaderboard();
-
-	UFUNCTION(BlueprintCallable)
-	void WriteLeaderboard();
-
 	void LoginLeaderboard();
 
-	void OnLoginCompleteReadStats(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
 
 	void ReadStats();
 

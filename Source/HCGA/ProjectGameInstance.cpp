@@ -5,20 +5,16 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
+#include "MoviePlayer/Public/MoviePlayer.h"
 
 UProjectGameInstance::UProjectGameInstance()
 {
 	
 }
 
-void UProjectGameInstance::ReadLeaderboard()
+void UProjectGameInstance::Init()
 {
-	//DTLB.ReadLeaderboard();
-}
-
-void UProjectGameInstance::WriteLeaderboard()
-{
-	//DTLB.WriteLeaderboard();
+	Super::Init();
 }
 
 void UProjectGameInstance::LoginLeaderboard()
@@ -39,16 +35,4 @@ void UProjectGameInstance::LoginLeaderboard()
 	//}
 }
 
-void UProjectGameInstance::OnLoginCompleteReadStats(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error)
-{
-	//Online::GetIdentityInterface(GetWorld())->ClearOnLoginCompleteDelegate_Handle(LocalUserNum, OnLoginCompleteDelegateHandle);
-	//IOnlineSubsystem::Get(STEAM_SUBSYSTEM)->GetIdentityInterface()->ClearOnLoginCompleteDelegate_Handle(LocalUserNum, OnLoginCompleteDelegateHandle);
-	//if (bWasSuccessful)
-	//{
-	//	ReadStats();
-	//}
-}
 
-void UProjectGameInstance::ReadStats()
-{
-}
