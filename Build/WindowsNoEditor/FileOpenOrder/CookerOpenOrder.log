@@ -2163,10 +2163,10 @@
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/GAME_SOUND/Metal_Cue.uasset" 2162
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/ObjectBP/Speaker/BP_Speaker.uasset" 2163
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/ObjectBP/BP_Speaker.uasset" 2164
-"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/sWITCH/default.uasset" 2165
-"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/sWITCH/Switch_Click.uasset" 2166
-"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/sWITCH/default_ncl1_1.uasset" 2167
-"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/sWITCH/Switch_Plate.uasset" 2168
+"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Swatch/default.uasset" 2165
+"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Swatch/Switch_Click.uasset" 2166
+"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Swatch/default_ncl1_1.uasset" 2167
+"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Swatch/Switch_Plate.uasset" 2168
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/ObjectBP/Speaker/BP_SpeakerSwitch.uasset" 2169
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/ObjectBP/BP_SpeakerSwitch.uasset" 2170
 "../../../Engine/Content/EngineMaterials/DefaultMaterial.uasset" 2171
@@ -2191,7 +2191,7 @@
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Nose/Mat_1_ncl1_1.uasset" 2190
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Nose/Mat_1.uasset" 2191
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Nose/NOSE_KO1_KO1.uasset" 2192
-"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/sWITCH/Switch_Plate_Blueprint.uasset" 2193
+"D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Swatch/Switch_Plate_Blueprint.uasset" 2193
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/Objects/Ted/Ted2_Blueprint.uasset" 2194
 "../../../Engine/Content/Functions/Engine_MaterialFunctions03/Procedurals/GeneratedBand.uasset" 2195
 "D:/00_JOITHEDOGFATHER/NOSE PROJECT/GAME/UNREAL/GitProject/HCGA/Content/ScienceVFX/Materials/M_Lighting.uasset" 2196
