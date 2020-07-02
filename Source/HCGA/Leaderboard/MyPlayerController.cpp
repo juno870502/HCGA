@@ -307,14 +307,6 @@ void AMyPlayerController::FindLeaderboard(const FString pchLeaderboardName)
 		m_callResultFindLeaderboard.Set(hSteamAPICall, this, &AMyPlayerController::OnFindLeaderboard);
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of FindLeaderboard")));
 	}
-	if (pchLeaderboardName == FString::Printf(TEXT("Time")))
-	{
-		LeaderboardSelector = true;
-	}
-	else
-	{
-		LeaderboardSelector = false;
-	}
 }
 
 bool AMyPlayerController::UploadScore(int score)
@@ -370,7 +362,7 @@ void AMyPlayerController::OnUploadScore(LeaderboardScoreUploaded_t * pResult, bo
 void AMyPlayerController::OnDownloadScore(LeaderboardScoresDownloaded_t * pResult, bool bIOFailure)
 {
 	BPDataArray.Empty();
-	BPTombArray.Empty();
+	//BPTombArray.Empty();
 	if (!bIOFailure)
 	{
 		//m_nLeaderboardEntries = min(pCallback->m_cEntryCount, 10);
@@ -379,31 +371,18 @@ void AMyPlayerController::OnDownloadScore(LeaderboardScoresDownloaded_t * pResul
 			m_nLeaderboardEntries = pResult->m_cEntryCount;
 		}
 		
-		if (LeaderboardSelector == true)
+		
+		for (int index = 0; index < m_nLeaderboardEntries; index++)
 		{
-			for (int index = 0; index < m_nLeaderboardEntries; index++)
-			{
-				SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, index, &m_leaderboardEntries[index], NULL, 0);
-				FLeaderboardRowData Data;
-				Data.SteamID = m_leaderboardEntries[index].m_steamIDUser.ConvertToUint64();
-				Data.Nickname = SteamFriends()->GetFriendPersonaName(m_leaderboardEntries[index].m_steamIDUser);
-				Data.Rank = m_leaderboardEntries[index].m_nGlobalRank;
-				Data.Time = m_leaderboardEntries[index].m_nScore;
-				BPDataArray.Add(Data);
-			}
-			GetUserLocationCall();
+			SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, index, &m_leaderboardEntries[index], NULL, 0);
+			FLeaderboardRowData Data;
+			Data.SteamID = m_leaderboardEntries[index].m_steamIDUser.ConvertToUint64();
+			Data.Nickname = SteamFriends()->GetFriendPersonaName(m_leaderboardEntries[index].m_steamIDUser);
+			Data.Rank = m_leaderboardEntries[index].m_nGlobalRank;
+			Data.Time = m_leaderboardEntries[index].m_nScore;
+			BPDataArray.Add(Data);
 		}
-		else
-		{
-			for (int index = 0; index < m_nLeaderboardEntries; index++)
-			{
-				SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, index, &m_leaderboardEntries[index], NULL, 0);
-				FTombStoneLeaderboard Data;
-				Data.Nickname = SteamFriends()->GetFriendPersonaName(m_leaderboardEntries[index].m_steamIDUser);
-				Data.Date = m_leaderboardEntries[index].m_nScore;
-				BPTombArray.Add(Data);
-			}
-		}
+		GetUserLocationCall();
 		
 	}
 	

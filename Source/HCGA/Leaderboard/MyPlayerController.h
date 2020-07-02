@@ -37,19 +37,7 @@ public:
 		UINT64 SteamID = 0;
 };
 
-USTRUCT(BlueprintType)
-struct FTombStoneLeaderboard
-{
-	GENERATED_USTRUCT_BODY()
 
-public:
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FString Nickname = "";
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		int32 Date = 0;
-};
 
 UCLASS()
 class HCGA_API AMyPlayerController : public APlayerController
@@ -90,17 +78,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TArray<FLeaderboardRowData> BPDataArray;
 
-	///** Read Tombstone leaderboard */
-	//UFUNCTION(BlueprintImplementableEvent)
-	//	void ReadTombstone();
-	///** Updates Tombstone leaderboard stats, force */
-	//UFUNCTION(BlueprintImplementableEvent)
-	//	void WriteTombstone();
-
-	/* TombStone Leaderboard*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		TArray<FTombStoneLeaderboard> BPTombArray;
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateWidget();
 
@@ -118,7 +95,6 @@ public:
 	SteamLeaderboard_t m_CurrentLeaderboard;
 	int m_nLeaderboardEntries = 100; // How many entries do we have?
 	LeaderboardEntry_t m_leaderboardEntries[100]; // The entries
-	bool LeaderboardSelector;
 	UFUNCTION(BlueprintCallable)
 	void FindLeaderboard(const FString pchLeaderboardName);
 	UFUNCTION(BlueprintCallable)
