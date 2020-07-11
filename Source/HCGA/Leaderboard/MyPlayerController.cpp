@@ -329,7 +329,7 @@ bool AMyPlayerController::DownloadScores()
 
 	// load the specified leaderboard data around the current user
 	SteamAPICall_t hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(
-		m_CurrentLeaderboard, k_ELeaderboardDataRequestGlobalAroundUser, -49, 50);
+		m_CurrentLeaderboard, k_ELeaderboardDataRequestGlobal, 1, 100);
 	m_callResultDownloadScore.Set(hSteamAPICall, this, &AMyPlayerController::OnDownloadScore);
 	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of DownloadScores")));
 	return true;

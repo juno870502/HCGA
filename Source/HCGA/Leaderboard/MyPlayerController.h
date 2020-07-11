@@ -45,6 +45,11 @@ class HCGA_API AMyPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	enum LeaderboardScope 
+	{
+		Personal,
+		Global
+	};
 	AMyPlayerController();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
