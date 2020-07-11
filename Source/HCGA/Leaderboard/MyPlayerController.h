@@ -37,6 +37,13 @@ public:
 		UINT64 SteamID = 0;
 };
 
+UENUM(BlueprintType)
+enum class LeaderboardScope : uint8
+{
+	Personal	UMETA(DisplayName = "Personal"),
+	Global		UMETA(DisplayName = "Global")
+};
+
 
 
 UCLASS()
@@ -45,11 +52,8 @@ class HCGA_API AMyPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
-	enum LeaderboardScope 
-	{
-		Personal,
-		Global
-	};
+
+	
 	AMyPlayerController();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
