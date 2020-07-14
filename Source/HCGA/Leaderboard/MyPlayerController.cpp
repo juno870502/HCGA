@@ -322,14 +322,25 @@ bool AMyPlayerController::UploadScore(int score)
 	return true;
 }
 
-bool AMyPlayerController::DownloadScores()
+bool AMyPlayerController::DownloadScores(const LeaderboardScope E_Scope)
 {
 	if (!m_CurrentLeaderboard)
 		return false;
 
 	// load the specified leaderboard data around the current user
-	SteamAPICall_t hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(
-		m_CurrentLeaderboard, k_ELeaderboardDataRequestGlobal, 1, 100);
+	SteamAPICall_t hSteamAPICall = NULL;
+	switch (E_Scope)
+	{
+	case LeaderboardScope::Personal:
+		hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(m_CurrentLeaderboard, k_ELeaderboardDataRequestGlobalAroundUser, 0, 0);
+		break;
+	case LeaderboardScope::Global:
+		hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(m_CurrentLeaderboard, k_ELeaderboardDataRequestGlobal, 1, 100);
+		break;
+	default:
+		break;
+	}
+	
 	m_callResultDownloadScore.Set(hSteamAPICall, this, &AMyPlayerController::OnDownloadScore);
 	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of DownloadScores")));
 	return true;
@@ -347,7 +358,6 @@ void AMyPlayerController::OnFindLeaderboard(LeaderboardFindResult_t * pResult, b
 	m_CurrentLeaderboard = pResult->m_hSteamLeaderboard;
 	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("End of OnFindLeaderboard")));
 	OnFindLeaderboardEvent();
-	DownloadScores();
 }
 
 void AMyPlayerController::OnUploadScore(LeaderboardScoreUploaded_t * pResult, bool bIOFailure)
@@ -362,6 +372,7 @@ void AMyPlayerController::OnUploadScore(LeaderboardScoreUploaded_t * pResult, bo
 void AMyPlayerController::OnDownloadScore(LeaderboardScoresDownloaded_t * pResult, bool bIOFailure)
 {
 	BPDataArray.Empty();
+	m_nLeaderboardEntries = 100;	// init number of entries
 	//BPTombArray.Empty();
 	if (!bIOFailure)
 	{
@@ -369,6 +380,7 @@ void AMyPlayerController::OnDownloadScore(LeaderboardScoresDownloaded_t * pResul
 		if (pResult->m_cEntryCount < m_nLeaderboardEntries)
 		{
 			m_nLeaderboardEntries = pResult->m_cEntryCount;
+			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString::Printf(TEXT("EntryCount : %d"), m_nLeaderboardEntries));
 		}
 		
 		

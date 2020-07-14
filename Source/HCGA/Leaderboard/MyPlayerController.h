@@ -109,7 +109,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool UploadScore(int score);
 	UFUNCTION(BlueprintCallable)
-	bool DownloadScores();
+	bool DownloadScores(const LeaderboardScope E_Scope);
 	void OnFindLeaderboard(LeaderboardFindResult_t *pResult, bool bIOFailure);
 	CCallResult<AMyPlayerController, LeaderboardFindResult_t> m_callResultFindLeaderboard;
 	UFUNCTION(BlueprintImplementableEvent)
