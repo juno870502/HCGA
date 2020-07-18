@@ -72,7 +72,7 @@ public:
 
 	/** Updates leaderboard stats, force */
 	UFUNCTION(BlueprintCallable)
-	void WriteLeaderboard();
+	void WriteLeaderboard(const float& RealTime);
 
 	UFUNCTION()
 	void OnLeaderboardReadCompleteToWrite(bool bWasSuccessful);

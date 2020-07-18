@@ -104,7 +104,7 @@ void AMyPlayerController::ClearLeaderboardDelegate()
 	}
 }
 
-void AMyPlayerController::WriteLeaderboard()
+void AMyPlayerController::WriteLeaderboard(const float& RealTime)
 {
 	IOnlineSubsystem* SubSystem = IOnlineSubsystem::Get(STEAM_SUBSYSTEM);
 
@@ -132,7 +132,7 @@ void AMyPlayerController::WriteLeaderboard()
 				// Read only one player, self.
 				Leaderboards->ReadLeaderboards(ArrayIdRef, ReadRef);
 
-				TimeToWrite = UGameplayStatics::GetTimeSeconds(GetWorld()) * 100;
+				TimeToWrite = RealTime * 100;
 			}
 		}
 	}
