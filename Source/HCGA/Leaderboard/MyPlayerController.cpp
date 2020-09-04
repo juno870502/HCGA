@@ -284,7 +284,14 @@ void AMyPlayerController::OnResponseReceived(FHttpRequestPtr Request, FHttpRespo
 			{
 				if (BPDataArray[j].SteamID == USteamID)
 				{
-					BPDataArray[j].Country = CountryCode;
+					if (CountryCode == "")
+					{
+						BPDataArray[j].Country = "NA";
+					}
+					else
+					{
+						BPDataArray[j].Country = CountryCode;
+					}
 					BPDataArray[j].ImgURL = ImgURL;
 					break;
 				}
