@@ -22,4 +22,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int SelectCharacter = 0;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int GameTimeScore = 0;
 };
