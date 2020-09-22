@@ -178,7 +178,7 @@ void AMyPlayerController::OnLeaderboardReadCompleteToWrite(bool bWasSuccessful)
 				IOnlineLeaderboardsPtr Leaderboards = SubSystem->GetLeaderboardsInterface();
 				if (Leaderboards.IsValid())
 				{
-					if (CompareData.Time > TimeToWrite || CompareData.Time == 0)
+					if (CompareData.Time > TimeToWrite || CompareData.Time < 0)
 					{
 						WriteLeaderboardVariable;
 						WriteLeaderboardVariable.SetIntStat(TEXT("Time"), TimeToWrite);
@@ -186,7 +186,7 @@ void AMyPlayerController::OnLeaderboardReadCompleteToWrite(bool bWasSuccessful)
 						Leaderboards->WriteLeaderboards(WriteLeaderboardVariable.LeaderboardNames[0], (*UserIdPtr), WriteLeaderboardVariable);
 						Leaderboards->FlushLeaderboards(WriteLeaderboardVariable.LeaderboardNames[0]);
 
-						//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Black, FString::Printf(TEXT("TimeIntager : %d"), TimeToWrite));
+						GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Black, FString::Printf(TEXT("TimeIntager : %d"), TimeToWrite));
 					}
 				}
 			}
